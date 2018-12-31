@@ -1,0 +1,8 @@
+{
+  "name": "multi-region-app",
+  "version": "1.0.0",
+  "scripts": {
+    "clean": "rm -rf target packaged-template.yaml",
+    "dist": "mkdir -p target; cp -R src package*.json target; cd target; npm install --production"
+  }
+}

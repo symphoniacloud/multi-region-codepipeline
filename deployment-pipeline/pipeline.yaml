@@ -1,0 +1,259 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# *** Change this to something useful for you!
+Description: Multi Region Codepipeline Example
+
+Parameters:
+  # *** This value must always be passed in when creating / updating stack
+  # "NoEcho" is set to true, for security, so token won't be visible when examining the resulting stack
+  GitHubOAuthToken:
+    Type: String
+    NoEcho: true
+    MinLength: 40
+    MaxLength: 40
+    AllowedPattern: '[a-z0-9]*'
+
+  # *** This value must always be passed in when creating / updating stack
+  # This value will be suffixed with `-${AWS::Region}` when locating buckets
+  ArtifactBucketNamePrefix:
+    Type: String
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+  # *** The remaining parameters should either be:
+  # - overridden via changing "Default" here (PREFERABLE, since then they're in source control)
+  # - or you can pass them in when creating / updating the stack
+  
+  # *** The stack name for the actual application we're deploying
+  ApplicationStackName:
+    Type: String
+    Default: multi-region-codepipeline-app
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+  # *** The owner of the Github repo for this application. Or delete this if you're not using Github
+  GitHubOwner:
+    Type: String
+    Default: symphoniacloud
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+  # *** The Github repo for this application. Or delete this if you're not using Github
+  GitHubRepo:
+    Type: String
+    Default: multi-region-codepipeline
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+  # *** The Github branch for this particular pipeline. Or delete this if you're not using Github
+  GitHubBranch:
+    Type: String
+    Default: master
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+Resources:
+  GithubWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitHubOAuthToken
+      Filters:
+      - JsonPath: "$.ref"
+        MatchEquals: refs/heads/{Branch}
+      Authentication: GITHUB_HMAC
+      TargetPipeline: !Ref CodePipeline
+      TargetAction: Source
+      Name: MyGithubWebhook
+      TargetPipelineVersion: !GetAtt CodePipeline.Version
+      RegisterWithThirdParty: 'true'
+
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+     # *** Update this list to be the same as the region bucket parameters you created above
+      ArtifactStores:
+        - Region: us-east-1
+          ArtifactStore:
+            Type: S3
+            Location: !Sub '${ArtifactBucketNamePrefix}-us-east-1'
+        - Region: us-west-2
+          ArtifactStore:
+            Type: S3
+            Location: !Sub '${ArtifactBucketNamePrefix}-us-west-2'
+      RestartExecutionOnUpdate: true
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      Stages:
+      - Name: Source
+        Actions:
+        # Change this to a different Source type if you're not using GitHub
+        - Name: Source
+          InputArtifacts: []
+          ActionTypeId:
+            Category: Source
+            Owner: ThirdParty
+            Version: 1
+            Provider: GitHub
+          OutputArtifacts:
+          - Name: SourceCode
+          Configuration:
+            Owner: !Ref GitHubOwner
+            Repo: !Ref GitHubRepo
+            Branch: !Ref GitHubBranch
+            PollForSourceChanges: false
+            OAuthToken: !Ref GitHubOAuthToken
+          RunOrder: 1
+      - Name: Build
+        Actions:
+        - Name: Build
+          ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Version: 1
+              Provider: CodeBuild
+          OutputArtifacts:
+            - Name: BuildOutput
+          InputArtifacts:
+            - Name: SourceCode
+          Configuration:
+              ProjectName: !Ref CodeBuildProject
+          RunOrder: 1
+      - Name: Deploy
+        Actions:
+        # *** Duplicate / edit / delete these stacks as necessary for your desired regions ***
+        # us-east-1 Application Stack
+          # *** Change this name to match desired region
+        - Name: UsEast1CreateChangeSet
+          # *** Change this for desired region
+          Region: us-east-1
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: '1'
+          InputArtifacts:
+            - Name: BuildOutput
+          Configuration:
+            ActionMode: CHANGE_SET_REPLACE
+            Capabilities: CAPABILITY_IAM
+            RoleArn: !GetAtt CloudformationRole.Arn
+            StackName: !Ref ApplicationStackName
+            ChangeSetName: changeset
+            # *** Change this to match the region of this stack, 
+            # *** using the file generated in the build step
+            TemplatePath: "BuildOutput::packaged-template-us-east-1.yaml"
+          RunOrder: 1
+          # *** Change this name to match desired region
+        - Name: UsEast1ExecuteChangeSet
+          # *** Change this for desired region
+          Region: us-east-1
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: '1'
+          Configuration:
+            ActionMode: CHANGE_SET_EXECUTE
+            Capabilities: CAPABILITY_IAM
+            ChangeSetName: changeset
+            RoleArn: !GetAtt CloudformationRole.Arn
+            StackName: !Ref ApplicationStackName
+          RunOrder: 2
+        # us-west-2 Application Stack
+          # *** Change this name to match desired region
+        - Name: UsWest2CreateChangeSet
+          # *** Change this for desired region
+          Region: us-west-2
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: '1'
+          InputArtifacts:
+            - Name: BuildOutput
+          Configuration:
+            ActionMode: CHANGE_SET_REPLACE
+            Capabilities: CAPABILITY_IAM
+            RoleArn: !GetAtt CloudformationRole.Arn
+            StackName: !Ref ApplicationStackName
+            ChangeSetName: changeset
+            # *** Change this to match the region of this stack, 
+            # *** using the file generated in the build step
+            TemplatePath: "BuildOutput::packaged-template-us-west-2.yaml"
+          RunOrder: 1
+          # *** Change this name to match desired region
+        - Name: UsWest2ExecuteChangeSet
+          # *** Change this for desired region
+          Region: us-west-2
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CloudFormation
+            Version: '1'
+          Configuration:
+            ActionMode: CHANGE_SET_EXECUTE
+            Capabilities: CAPABILITY_IAM
+            ChangeSetName: changeset
+            RoleArn: !GetAtt CloudformationRole.Arn
+            StackName: !Ref ApplicationStackName
+          RunOrder: 2
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    DependsOn: CodeBuildRole
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        # Use a higher powered instance here if you need, see:
+        # https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html
+        ComputeType: BUILD_GENERAL1_SMALL
+        # Use a different image for different types of source code, see:
+        # https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
+        Image: aws/codebuild/nodejs:8.11.0
+        # Use WINDOWS_CONTAINER here if using Windows
+        Type: LINUX_CONTAINER
+        # *** Update this list to be the same as the region bucket parameters you created above
+        # Make sure that this is the same list expected in your build script
+        EnvironmentVariables:
+        - Name: US_EAST_1_ARTIFACT_BUCKET
+          Value: !Sub '${ArtifactBucketNamePrefix}-us-east-1'
+        - Name: US_WEST_2_ARTIFACT_BUCKET
+          Value: !Sub '${ArtifactBucketNamePrefix}-us-west-2'
+      ServiceRole: !Ref CodeBuildRole
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: deployment-pipeline/buildspec.yaml
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess #TODO: Reduce permissions
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess #TODO: Reduce permissions
+
+  CloudformationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: cloudformation.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess #TODO: Reduce permissions

@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Per-region prerequisites for lambda-benchmarking
+
+Resources:
+  # Used for CodePipeline and Cloudformation/SAM artifacts across stacks
+  CodePipelineBuildArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      # *** Change this when you want to change the name of the pipeline resources
+      # Note that this is account aware, so you can safely deploy the same repo
+      # to multiple accounts (bucket names are globally unique), but you don't have to do this
+      # With the way this setup works you MUST end the bucket name with -${AWS::Region}, so that
+      # the buckets can be found by the pipeline template
+      BucketName: !Sub 'multi-region-codepipeline-${AWS::AccountId}-${AWS::Region}'
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 90
+            Status: Enabled
+      VersioningConfiguration:
+        Status: Enabled

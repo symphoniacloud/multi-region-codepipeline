@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install --upgrade awscli # https://github.com/awslabs/serverless-application-model/issues/93
+  build:
+    commands:
+      - chmod u+x ./mulitregion-build.sh
+      - ./mulitregion-build.sh
+
+artifacts:
+  type: zip
+  discard-paths: yes
+  files:
+    # *** Change this list to reflect the per-region files generated in multiregion-build.sh
+    - target/packaged-template-us-east-1.yaml
+    - target/packaged-template-us-west-2.yaml

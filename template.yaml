@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+# ** Change this to something useful!
+Description: My Multi Region App
+
+Resources:
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./target
+      Handler: src/lambda.handler
+      Timeout: 5
+      Runtime: nodejs8.10
+
