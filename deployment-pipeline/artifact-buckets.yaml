@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Per-region prerequisites for lambda-benchmarking
+Description: Per-region prerequisites for multi region app
 
 Resources:
   # Used for CodePipeline and Cloudformation/SAM artifacts across stacks
