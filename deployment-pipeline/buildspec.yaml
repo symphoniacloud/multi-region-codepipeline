@@ -6,8 +6,8 @@ phases:
       - pip install --upgrade awscli # https://github.com/awslabs/serverless-application-model/issues/93
   build:
     commands:
-      - chmod u+x ./mulitregion-build.sh
-      - ./mulitregion-build.sh
+      - chmod u+x ./multiregion-build.sh
+      - ./multiregion-build.sh
 
 artifacts:
   type: zip

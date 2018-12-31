@@ -57,7 +57,7 @@ To test everything, see if once the pipeline has completed it's first run succes
 
 ## How to update the pipeline
 
-When you need to update the application code or structure (as defined in `template.yaml`), or when you need to change how the application is built (either in the `mulitregion-build.sh` or `deployment-pipeline/buildspec.yaml` files), then simply pushing your changes to source control will be sufficient - CodePipeline references these files from source on every pipeline run.
+When you need to update the application code or structure (as defined in `template.yaml`), or when you need to change how the application is built (either in the `multiregion-build.sh` or `deployment-pipeline/buildspec.yaml` files), then simply pushing your changes to source control will be sufficient - CodePipeline references these files from source on every pipeline run.
 
 If you need to change the structure of the CodePipeline itself then run `deployment-pipeline/update-pipeline.sh` with the same arguments that you ran `create-pipeline.sh`.
 
