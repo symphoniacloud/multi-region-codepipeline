@@ -1,4 +1,4 @@
-# Multi Region Code Pipeline example
+# Multi Region CodePipeline example
 
 This is a "walking skeleton" application that you can modify to create an AWS application
 continuously deployed to multiple AWS regions. If you don't know what "AWS Regions" are, or why you might want them, then you might want to do some Googling before using this example.
@@ -10,6 +10,8 @@ The following core AWS services are used in example.
 * The deployment pipeline makes use of AWS CodeBuild, defined within the pipeline template, plus also `deployment-pipeline/buildpec.yaml`, using the build script `multiregion-build.sh`
 
 In summary, by using this example you will have a continuous deployed application, targeting multiple AWS regions, using only AWS services, a single CodePipeline instance, and zero custom tasks or custom resources.
+
+The documentation with this example assumes you have a working knowledge of using the AWS CLI from a terminal, CloudFormation, and some modicum of familiarity of CodePipeline and CodeBuild.
 
 ![Example](images/example-output.png "Example of 2 region deployment")
 
