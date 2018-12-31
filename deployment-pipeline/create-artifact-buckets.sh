@@ -7,7 +7,7 @@ REGIONS="us-east-1 us-west-2"
 
 # *** Change this to the name of the stack that will be created *in each* region to manage
 # your codepipeline artifact bucket (calling it the same as your codepipeline stack, suffixed
-# with '-artifact-bucket' makes most senete)
+# with '-artifact-bucket' makes most sense)
 STACKNAME="multi-region-codepipeline-artifact-bucket"
 
 for REGION in $REGIONS
