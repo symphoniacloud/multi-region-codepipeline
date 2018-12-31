@@ -8,7 +8,7 @@ Resources:
     Properties:
       # *** Change this when you want to change the name of the pipeline resources
       # Note that this is account aware, so you can safely deploy the same repo
-      # to multiple accounts (bucket names are globally unique), but you don't have to do this
+      # to multiple accounts (bucket names are globally unique), but you don't have to do this.
       # With the way this setup works you MUST end the bucket name with -${AWS::Region}, so that
       # the buckets can be found by the pipeline template
       BucketName: !Sub 'multi-region-codepipeline-${AWS::AccountId}-${AWS::Region}'
