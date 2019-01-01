@@ -1,7 +1,7 @@
 # Multi Region CodePipeline example
 
-This is a "walking skeleton" application that you can modify to create an AWS application
-continuously deployed, using AWS CodePipeline, to multiple AWS regions. If you don't know what "AWS Regions" or CodePipeline are, or why you might want them, then you might want to do some Googling before using this example.
+This is a "walking skeleton" application that you can modify to create a continuously deployed AWS application
+using AWS CodePipeline, to multiple AWS regions. If you don't know what "AWS Regions" or CodePipeline are, or why you might want them, then you might want to do some Googling before using this example.
 
 The following core AWS services are used in example.
 
@@ -65,12 +65,12 @@ If you need to change the structure of the CodePipeline itself then run `deploym
 If you need to add or change regions, then do the following:
 
 1. Update the 4 files listed above in step 5 under creating the pipeline, changing the regions where referenced
-2. If you are **adding** regions, then change `create-artifact-buckets.sh` to **just** be the regions that you are adding
+2. If you are **adding** regions, then change `create-artifact-buckets.sh` to **just** specify the regions that you are adding
 3. Re-run `create-artifact-buckets.sh`, and then update the pipeline as described above.
 
 ## How this works
 
-Back in the dim an distant past of 8 weeks ago (before November 12 2018), it was not possible to use CodePipeline for cross-region actions, and so if you wanted to do multi-region CD you either needed to create a CodePipeline for each region (bleurgh), create custom workflow (sigh), or not use CodePipeline (whaaah!).
+Back in the dim an distant past of 8 weeks ago (before November 12 2018), it was not possible to use CodePipeline for cross-region actions, and so if you wanted to do multi-region CD you either needed to create a CodePipeline for each region (bleurgh), create custom workflow (sigh), or not use CodePipeline (whaaah!)
 
 But as of November 2018 CodePipeline supports "[Cross-Region Actions](https://docs.aws.amazon.com/codepipeline/latest/userguide/actions-create-cross-region.html)", meaning none of the above work-arounds are necessary. Huzzah! If you look in `deployment-pipeline/pipeline.yaml` you'll see the new `Region:` property being used on the "Deploy" actions. We duplicate the deploy actions for each region, parallelizing them to speed up the total deployment process.
 
