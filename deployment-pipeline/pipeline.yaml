@@ -115,9 +115,8 @@ Resources:
       - Name: Deploy
         Actions:
         # *** Duplicate / edit / delete these stacks as necessary for your desired regions ***
-        # us-east-1 Application Stack
           # *** Change this name to match desired region
-        - Name: UsEast1CreateChangeSet
+        - Name: DeployToUsEast1
           # *** Change this for desired region
           Region: us-east-1
           ActionTypeId:
@@ -128,34 +127,16 @@ Resources:
           InputArtifacts:
             - Name: BuildOutput
           Configuration:
-            ActionMode: CHANGE_SET_REPLACE
-            Capabilities: CAPABILITY_IAM
+            ActionMode: CREATE_UPDATE
+            Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
             RoleArn: !GetAtt CloudformationRole.Arn
             StackName: !Ref ApplicationStackName
-            ChangeSetName: changeset
             # *** Change this to match the region of this stack, 
             # *** using the file generated in the build step
             TemplatePath: "BuildOutput::packaged-template-us-east-1.yaml"
           RunOrder: 1
           # *** Change this name to match desired region
-        - Name: UsEast1ExecuteChangeSet
-          # *** Change this for desired region
-          Region: us-east-1
-          ActionTypeId:
-            Category: Deploy
-            Owner: AWS
-            Provider: CloudFormation
-            Version: '1'
-          Configuration:
-            ActionMode: CHANGE_SET_EXECUTE
-            Capabilities: CAPABILITY_IAM
-            ChangeSetName: changeset
-            RoleArn: !GetAtt CloudformationRole.Arn
-            StackName: !Ref ApplicationStackName
-          RunOrder: 2
-        # us-west-2 Application Stack
-          # *** Change this name to match desired region
-        - Name: UsWest2CreateChangeSet
+        - Name: DeployToUsWest2
           # *** Change this for desired region
           Region: us-west-2
           ActionTypeId:
@@ -166,31 +147,14 @@ Resources:
           InputArtifacts:
             - Name: BuildOutput
           Configuration:
-            ActionMode: CHANGE_SET_REPLACE
-            Capabilities: CAPABILITY_IAM
+            ActionMode: CREATE_UPDATE
+            Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
             RoleArn: !GetAtt CloudformationRole.Arn
             StackName: !Ref ApplicationStackName
-            ChangeSetName: changeset
             # *** Change this to match the region of this stack, 
             # *** using the file generated in the build step
             TemplatePath: "BuildOutput::packaged-template-us-west-2.yaml"
           RunOrder: 1
-          # *** Change this name to match desired region
-        - Name: UsWest2ExecuteChangeSet
-          # *** Change this for desired region
-          Region: us-west-2
-          ActionTypeId:
-            Category: Deploy
-            Owner: AWS
-            Provider: CloudFormation
-            Version: '1'
-          Configuration:
-            ActionMode: CHANGE_SET_EXECUTE
-            Capabilities: CAPABILITY_IAM
-            ChangeSetName: changeset
-            RoleArn: !GetAtt CloudformationRole.Arn
-            StackName: !Ref ApplicationStackName
-          RunOrder: 2
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
