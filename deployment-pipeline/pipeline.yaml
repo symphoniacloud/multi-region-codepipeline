@@ -8,9 +8,6 @@ Parameters:
   GitHubOAuthToken:
     Type: String
     NoEcho: true
-    MinLength: 40
-    MaxLength: 40
-    AllowedPattern: '[a-z0-9]*'
 
   # *** This value must always be passed in when creating / updating stack
   # This value will be suffixed with `-${AWS::Region}` when locating buckets
